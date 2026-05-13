@@ -346,7 +346,7 @@ fn build_workloads_and_properties(args: &Args) -> BuildArtifacts {
 
         (w, p, et, chaotic)
     } else {
-        let w: Vec<(u32, Box<dyn Workload>)> = vec![
+        let mut w: Vec<(u32, Box<dyn Workload>)> = vec![
             (10, Box::new(IntegrityCheckWorkload)),
             (5, Box::new(WalCheckpointWorkload)),
             (10, Box::new(CreateSimpleTableWorkload)),
@@ -356,11 +356,13 @@ fn build_workloads_and_properties(args: &Args) -> BuildArtifacts {
             (15, Box::new(DeleteWorkload)),
             (2, Box::new(CreateIndexWorkload)),
             (2, Box::new(DropIndexWorkload)),
-            (1, Box::new(DropTableWorkload)),
-            (30, Box::new(BeginWorkload)),
-            (10, Box::new(CommitWorkload)),
-            (10, Box::new(RollbackWorkload)),
         ];
+        if !args.enable_mvcc {
+            w.push((1, Box::new(DropTableWorkload)));
+        }
+        w.push((30, Box::new(BeginWorkload)));
+        w.push((10, Box::new(CommitWorkload)));
+        w.push((10, Box::new(RollbackWorkload)));
 
         let p: Vec<Box<dyn Property>> = vec![
             Box::new(IntegrityCheckProperty),
